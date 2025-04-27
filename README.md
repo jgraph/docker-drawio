@@ -71,8 +71,29 @@ Notice that mapping port 80 to container's port 80 allows certbot to work in sta
 
 ## Changing draw.io configuration
 
-Configuration is managed by `DRAWIO_*` environment variables. For a list of these variables, check the `docker-entrypoint.sh` file in the `main` directory. For example, these variables allow enabling integration with Google Drive, OneDrive, ...
+Configuration is managed by `DRAWIO_*` environment variables. For example, these variables allow enabling integration with Google Drive, OneDrive, ...
 
+* **DRAWIO_GITLAB_ID**: blablabla; default ``
+* **DRAWIO_CSP_HEADER**: blablabla; default ``
+* **DRAWIO_SELF_CONTAINED**: blablabla; default ``
+* **DRAWIO_SERVER_URL**: blablabla; default ``
+* **DRAWIO_BASE_URL**: blablabla; default ``
+* **DRAWIO_VIEWER_URL**: blablabla; default ``
+* **DRAWIO_LIGHTBOX_URL**: blablabla; default ``
+* **DRAWIO_GOOGLE_CLIENT_ID**: blablabla; default ``
+* **DRAWIO_GOOGLE_APP_ID**: blablabla; default ``
+* **DRAWIO_GOOGLE_CLIENT_SECRET**: blablabla; default ``
+* **DRAWIO_GOOGLE_VIEWER_CLIENT_ID**: blablabla; default ``
+* **DRAWIO_MSGRAPH_CLIENT_ID**: blablabla; default ``
+* **DRAWIO_MSGRAPH_CLIENT_SECRET**: blablabla; default ``
+* **DRAWIO_MSGRAPH_TENANT_ID**: blablabla; default ``
+* **DRAWIO_GITLAB_ID**: blablabla; default ``
+* **DRAWIO_GITLAB_URL**: blablabla; default ``
+* **DRAWIO_GITLAB_SECRET**: blablabla; default ``
+* **DRAWIO_CLOUD_CONVERT_APIKEY**: blablabla; default ``
+
+
+For any missing variables, check the `docker-entrypoint.sh` file in the `main` directory.
 ## SOC 2
 
 This repo is not covered by the JGraph SOC 2 process.
