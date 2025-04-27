@@ -43,15 +43,17 @@ If you're running `Docker Toolbox` then start a web browser session to <http://1
 
 ## Environment variables
 
-* **LETS_ENCRYPT_ENABLED**: Enables Let's Encrypt certificate instead of self-signed; default `false`
-* **PUBLIC_DNS**: DNS domain to be used as certificate "CN" record; default `draw.example.com`
-* **ORGANISATION_UNIT**: Organisation unit to be used as certificate "OU" record; default `Cloud Native Application`
-* **ORGANISATION**: Organisation name to be used as certificate "O" record; default `example inc`
-* **CITY**: City name to be used as certificate "L" record; default `Paris`
-* **STATE**: State name to be used as certificate "ST" record; default `Paris`
-* **COUNTRY_CODE**: Country code to be used as certificate "C" record; default `FR`
-* **KEYSTORE_PASS**: ".keystore"/.jks" store password; default `V3ry1nS3cur3P4ssw0rd`
-* **KEY_PASS**: Private key password; default `<ref:KEYSTORE_PASS>`
+| **Variable** | Default | Description |
+| ---                    | ---                        | ---                                                      |
+| `LETS_ENCRYPT_ENABLED` | `false`                    | Enables Let's Encrypt certificate instead of self-signed |
+| `PUBLIC_DNS`           | `draw.example.com`         | DNS domain to be used as certificate "CN" record         |
+| `ORGANISATION_UNIT`    | `Cloud Native Application` | Organisation unit to be used as certificate "OU" record  |
+| `ORGANISATION`         | `example inc`              | Organisation name to be used as certificate "O" record   |
+| `CITY`                 | `Paris`                    | City name to be used as certificate "L" record           |
+| `STATE`                | `Paris`                    | State name to be used as certificate "ST" record         |
+| `COUNTRY_CODE`         | `FR`                       | Country code to be used as certificate "C" record        |
+| `KEYSTORE_PASS`        | `V3ry1nS3cur3P4ssw0rd`     | ".keystore"/.jks" store password                         |
+| `KEY_PASS`             | `<ref:KEYSTORE_PASS>`      | Private key password                                     |
 
 ## HTTPS SSL Certificate via Let's Encrypt
 
