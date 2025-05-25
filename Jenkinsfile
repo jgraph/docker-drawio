@@ -1,3 +1,5 @@
+// This file is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
 // https://github.com/jenkinsci/pipeline-model-definition-plugin/wiki/Syntax-Reference
 // https://jenkins.io/doc/book/pipeline/syntax/#parallel
 // https://jenkins.io/doc/book/pipeline/syntax/#post

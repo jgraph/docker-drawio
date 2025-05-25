@@ -1,13 +1,5 @@
 version: '3'
 services:
-  plantuml-server:
-    image: plantuml/plantuml-server
-    expose:
-      - "8080"
-    networks:
-      - drawionet
-    volumes:
-      - fonts_volume:/usr/share/fonts/drawio
   image-export:
     image: jgraph/export-server
     expose:
@@ -24,10 +16,8 @@ services:
       - "8443:8443"
       - "8080:8080"
     links:
-      - plantuml-server:plantuml-server
       - image-export:image-export
     depends_on:
-      - plantuml-server
       - image-export
     networks:
       - drawionet
