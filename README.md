@@ -43,15 +43,17 @@ If you're running `Docker Toolbox` then start a web browser session to <http://1
 
 ## Environment variables
 
-* **LETS_ENCRYPT_ENABLED**: Enables Let's Encrypt certificate instead of self-signed; default `false`
-* **PUBLIC_DNS**: DNS domain to be used as certificate "CN" record; default `draw.example.com`
-* **ORGANISATION_UNIT**: Organisation unit to be used as certificate "OU" record; default `Cloud Native Application`
-* **ORGANISATION**: Organisation name to be used as certificate "O" record; default `example inc`
-* **CITY**: City name to be used as certificate "L" record; default `Paris`
-* **STATE**: State name to be used as certificate "ST" record; default `Paris`
-* **COUNTRY_CODE**: Country code to be used as certificate "C" record; default `FR`
-* **KEYSTORE_PASS**: ".keystore"/.jks" store password; default `V3ry1nS3cur3P4ssw0rd`
-* **KEY_PASS**: Private key password; default `<ref:KEYSTORE_PASS>`
+| **Variable** | Default | Description |
+| ---                    | ---                        | ---                                                      |
+| `LETS_ENCRYPT_ENABLED` | `false`                    | Enables Let's Encrypt certificate instead of self-signed |
+| `PUBLIC_DNS`           | `draw.example.com`         | DNS domain to be used as certificate "CN" record         |
+| `ORGANISATION_UNIT`    | `Cloud Native Application` | Organisation unit to be used as certificate "OU" record  |
+| `ORGANISATION`         | `example inc`              | Organisation name to be used as certificate "O" record   |
+| `CITY`                 | `Paris`                    | City name to be used as certificate "L" record           |
+| `STATE`                | `Paris`                    | State name to be used as certificate "ST" record         |
+| `COUNTRY_CODE`         | `FR`                       | Country code to be used as certificate "C" record        |
+| `KEYSTORE_PASS`        | `V3ry1nS3cur3P4ssw0rd`     | ".keystore"/.jks" store password                         |
+| `KEY_PASS`             | `<ref:KEYSTORE_PASS>`      | Private key password                                     |
 
 ## HTTPS SSL Certificate via Let's Encrypt
 
@@ -71,6 +73,43 @@ Notice that mapping port 80 to container's port 80 allows certbot to work in sta
 
 ## Changing draw.io configuration
 
+Configuration is managed by `DRAWIO_*` environment variables. For example, these variables allow enabling integration with Google Drive, OneDrive, ...
+
+| **Draw.io variables:**            | Description                                                                                                                                          |
+| :---:                             | :---                                                                                                                                                 |
+| `DRAWIO_CSP_HEADER`               | `Your website Content-Security-Policy if you want to customize it`                                                                                   |
+| `DRAWIO_SELF_CONTAINED`           |                                                                                                                                                      |
+| `DRAWIO_CONFIG`                   | `draw.io configuration JSON location` [More information](https://www.drawio.com/doc/faq/configure-diagram-editor)                                    |
+| `DRAWIO_SERVER_URL`               | `Your deployment base URL.` **Note**: Must end with `/`                                                                                              |
+| `DRAWIO_BASE_URL`                 | `Your deployment base URL but used with the viewer, lightbox and embed` **Note**: Must end **NOT** containing an `/` at the end                      |
+| `DRAWIO_VIEWER_URL`               | `Your website Content-Security-Policy Header`                                                                                                        |
+| `DRAWIO_LIGHTBOX_URL`             |                                                                                                                                                      |
+|                                   |                                                                                                                                                      |
+| **Google variables:**             | [More information about how to obtain](https://github.com/jgraph/docker-drawio/blob/dev/self-contained/README.md#google-drive)                       |
+| `DRAWIO_GOOGLE_CLIENT_ID`         | `Your Google Client ID`                                                                                                                              |
+| `DRAWIO_GOOGLE_APP_ID`            | `Your Google App ID`                                                                                                                                 |
+| `DRAWIO_GOOGLE_CLIENT_SECRET`     | `Your Google Client Secret`                                                                                                                          |
+| `DRAWIO_GOOGLE_VIEWER_CLIENT_ID`  | `Your Google Viewer Client ID`                                                                                                                       |
+|                                   |                                                                                                                                                      |
+| **Microsoft variables:**          | [More information about how to obtain](https://github.com/jgraph/docker-drawio/blob/dev/self-contained/README.md#microsoft-onedrive)                 |
+| `DRAWIO_MSGRAPH_CLIENT_ID`        | `Your Microsoft Client ID`                                                                                                                           |
+| `DRAWIO_MSGRAPH_CLIENT_SECRET`    | `Your Microsoft Client Secret`                                                                                                                       |
+| `DRAWIO_MSGRAPH_TENANT_ID`        | `Your Microsoft Tenant ID` **(Single tenant only)**                                                                                                  |
+|                                   |                                                                                                                                                      |
+| **Gitlab variables:**             | [More information about how to obtain](https://github.com/jgraph/docker-drawio/blob/dev/self-contained/README.md#gitlab)                             |
+| `DRAWIO_GITLAB_ID`                | `Your Gitlab ID`                                                                                                                                     |
+| `DRAWIO_GITLAB_SECRET`            | `Your Gitlab Secret`                                                                                                                                 |
+| `DRAWIO_GITLAB_URL`               | `Your Gitlab URL, for example, https://example.com/oauth/token`                                                                                      |
+|                                   |                                                                                                                                                      |
+| **Cloud convert variables:**      | [More information about how to obtain](https://github.com/jgraph/docker-drawio/blob/dev/self-contained/README.md#emf-converter)                      |
+| `DRAWIO_CLOUD_CONVERT_APIKEY`     | We use API **V1** API KEY.                                                                                                                           |
+
+
+For any missing variables, check the `docker-entrypoint.sh` file in the `main` directory.
+## SOC 2
+
+This repo is not covered by the JGraph SOC 2 process.
+=======
 Configuration is managed by `DRAWIO_*` environment variables. For a list of these variables, check the `docker-entrypoint.sh` file in the `main` directory. For example, these variables allow enabling integration with Google Drive, OneDrive, ...
 
 ## Reference
