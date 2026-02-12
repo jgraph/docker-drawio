@@ -53,7 +53,7 @@ COPY docker-entrypoint.sh /
 RUN chmod 755 /docker-entrypoint.sh
 # Add a tomcat user
 RUN groupadd -r ${RUN_GROUP} && useradd -g ${RUN_GROUP} -d ${CATALINA_HOME} -s /bin/bash ${RUN_USER} && \
-    chown -R ${RUN_USER}:${RUN_GROUP} ${CATALINA_HOME}
+    chown -R ${RUN_USER}:${RUN_GROUP} ${CATALINA_HOME} && chmod -R g+w ${CATALINA_HOME}
 
 USER ${RUN_USER}
 
