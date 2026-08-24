@@ -94,6 +94,7 @@ All container behaviour is controlled by environment variables, processed by [`m
 * **COUNTRY_CODE**: Country code to be used as certificate "C" record; default `FR`
 * **KEYSTORE_PASS**: ".keystore"/".jks" store password; default `V3ry1nS3cur3P4ssw0rd`
 * **KEY_PASS**: Private key password; default `<ref:KEYSTORE_PASS>`
+* **TOMCAT_REQUEST_HEADER_LIMIT**: Request header limit for the Tomcat Server
 
 ### Deployment URL
 

@@ -81,6 +81,14 @@ if [ -n "$DRAWIO_SERVER_URL_VALUE" ] && [ -n "$CONTEXT_PATH" ]; then
 else
   echo "Tomcat context remains at root '/'"
 fi
+
+# Update the maxHTTPHeaderSize in Tomcat for the HTTP endpoint
+echo "Updating Tomcat max header size to '${TOMCAT_REQUEST_HEADER_LIMIT:-8192}'"
+  xmlstarlet ed -P -S -L \
+    -i '/Server/Service/Connector[@port="8080"]' -t attr -n 'maxHttpHeaderSize' -v "${TOMCAT_REQUEST_HEADER_LIMIT:-8192}" \
+    conf/server.xml
+
+
 #DRAWIO_VIEWER_URL is path to the viewer js, e.g. https://www.example.com/js/viewer.min.js
 echo "window.DRAWIO_VIEWER_URL = '${DRAWIO_VIEWER_URL}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 #DRAWIO_LIGHTBOX_URL Replace with your lightbox URL, eg. https://www.example.com
@@ -207,6 +215,7 @@ if [ -f $CATALINA_HOME/.keystore ] && [ -z $VAR ]; then
         -i "/Server/Service/${UUID}" -t 'attr' -n 'KeystoreFile' -v "$CATALINA_HOME/.keystore" \
         -i "/Server/Service/${UUID}" -t 'attr' -n 'KeystorePass' -v "${KEY_PASS}" \
         -i "/Server/Service/${UUID}" -t 'attr' -n 'defaultSSLHostConfigName' -v "${PUBLIC_DNS:-'draw.example.com'}" \
+        -i "/Server/Service/${UUID}" -t 'attr' -n 'maxHttpHeaderSize' -v "${TOMCAT_REQUEST_HEADER_LIMIT:-8192}" \
         -s "/Server/Service/${UUID}" -t 'elem' -n 'SSLHostConfig' \
         -i "/Server/Service/${UUID}/SSLHostConfig" -t 'attr' -n 'hostName' -v "${PUBLIC_DNS:-'draw.example.com'}" \
         -i "/Server/Service/${UUID}/SSLHostConfig" -t 'attr' -n 'protocols' -v 'TLSv1.2' \
