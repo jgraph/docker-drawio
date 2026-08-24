@@ -45,6 +45,8 @@ If you're running `Docker Toolbox` then start a web browser session to <http://1
 
 Both images already run as a dedicated non-root user by default — `tomcat` (UID `1001`, GID `999`) in `jgraph/drawio` and `pptruser` (UID `999`) in `jgraph/export-server` — so nothing needs to be configured just to avoid root.
 
++This image also works with Podman (including rootless Podman).
+
 To run under a *different* UID (a compose `user:` override, Kubernetes `runAsUser`, or OpenShift's arbitrary UIDs), the user must carry the **root group (GID `0`)**. Configuration is applied at startup by rewriting files inside the container ([`main/docker-entrypoint.sh`](main/docker-entrypoint.sh)), and both images grant GID `0` owner-equivalent permissions on those paths, following the OpenShift image guidelines. Membership of group `0` grants no other privileges — it is not root.
 
 ```bash
