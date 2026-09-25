@@ -197,6 +197,7 @@ else
 
     if [[ "${DRAWIO_MSGRAPH_TENANT_ID}" ]]; then
         echo "window.DRAWIO_MSGRAPH_TENANT_ID = '${DRAWIO_MSGRAPH_TENANT_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+        echo -n "${DRAWIO_MSGRAPH_TENANT_ID}" > $CATALINA_HOME/webapps/draw/WEB-INF/msgraph_tenant_id
     fi
 fi
 
