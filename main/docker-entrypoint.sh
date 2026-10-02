@@ -257,7 +257,7 @@ if ! [ -f $CATALINA_HOME/.keystore ] && [ "$LETS_ENCRYPT_ENABLED" == "false" ]; 
     keytool -list -keystore $CATALINA_HOME/.keystore -v -storepass "${KEYSTORE_PASS}"
 fi
 
-# Update SSL port configuration if it does'nt exists
+# Update SSL port configuration if it doesn't exist
 #
 UUID="$(cat /dev/urandom | tr -dc 'a-zA-Z' | fold -w 1 | head -n 1)$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 7 | head -n 1)"
 VAR=$(cat conf/server.xml | grep "$CATALINA_HOME/.keystore")
