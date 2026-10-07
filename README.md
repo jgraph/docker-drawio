@@ -34,9 +34,9 @@ Run the container.
 docker run -it --rm --name="draw" -p 8080:8080 -p 8443:8443 jgraph/drawio
 ```
 
-Start a web browser session to <http://localhost:8080/?offline=1&https=0> or <https://localhost:8443/?offline=1>
+Start a web browser session to <http://localhost:8080/?offline=1> or <https://localhost:8443/?offline=1>
 
-If you're running `Docker Toolbox` then start a web browser session to <http://192.168.99.100:8080/?offline=1&https=0> or <https://192.168.99.100:8443/?offline=1>
+If you're running `Docker Toolbox` then start a web browser session to <http://192.168.99.100:8080/?offline=1> or <https://192.168.99.100:8443/?offline=1>
 
 > `?offline=1` is a security feature that disables support of cloud storage.
 
@@ -139,7 +139,7 @@ All container behaviour is controlled by environment variables, processed by [`m
   docker run -p 8080:8080 -v ./drawio-config.json:/config/drawio-config.json:ro -e DRAWIO_CONFIG_FILE=/config/drawio-config.json jgraph/drawio
   ```
 
-* **DRAWIO_LANG**: Default language of the editor UI as a draw.io language code, e.g. `es`, `de` or `pt-br` (the codes behind the editor's *Language* menu). Used when the URL has no `lang` parameter and the user has not picked a language in the editor; both of those still win. Unset = browser language. There is no language key in `DRAWIO_CONFIG`.
+* **DRAWIO_LANG**: Default language of the editor UI as a draw.io language code, e.g. `es`, `de` or `pt-br` (the codes behind the editor's *Language* menu). Used when the URL has no `lang` parameter and the user has not picked a language in the editor; both of those still win. Unset = English. draw.io only follows the browser language on its own domains (app.diagrams.net and similar), never on a self-hosted one. There is no language key in `DRAWIO_CONFIG`.
 * **DRAWIO_CSP_HEADER**: Override the default Content-Security-Policy `<meta>` injected into the page. Defaults to a hard-coded policy in [`docker-entrypoint.sh`](main/docker-entrypoint.sh) — start from that policy when customising.
 * **ENABLE_DRAWIO_PROXY**: Set to `1` to enable the `/proxy` endpoint (ProxyServlet) which allows embedding images from external URLs; default disabled.
 
@@ -176,11 +176,13 @@ Create a project at the [Google API Console](https://console.developers.google.c
 
 ### Microsoft OneDrive integration
 
-Register an application to use the MS Graph APIs, see [how to register your app](https://docs.microsoft.com/en-us/graph/auth-register-app-v2) and [how to use the APIs](https://docs.microsoft.com/en-us/graph/use-the-api). In the Azure portal select the new app, then "Authentication", and add two redirect URIs: `[your-draw.io-hostname]/microsoft` and `[your-draw.io-hostname]/onedrive3.html`. For example, if you host draw.io at `https://drawio.example.com`, the redirect URIs are `https://drawio.example.com/microsoft` and `https://drawio.example.com/onedrive3.html`. In "Advanced settings" on the same page, enable the "Access tokens" and "ID tokens" check boxes. Create the client secret under "Certificates & secrets" ("+ New client secret"); the "Application (client) ID" is on the "Overview" page.
+Register an application to use the MS Graph APIs, see [how to register your app](https://docs.microsoft.com/en-us/graph/auth-register-app-v2) and [how to use the APIs](https://docs.microsoft.com/en-us/graph/use-the-api). In the Azure portal select the new app, then "Authentication", and add the redirect URI `[your-draw.io-hostname]/microsoft` under the "Web" platform. For example, if you host draw.io at `https://drawio.example.com`, the redirect URI is `https://drawio.example.com/microsoft`. Sign-in uses the authorization code flow, with the token exchange done by the server using the client secret, so the implicit grant ("Access tokens" and "ID tokens" under "Advanced settings") can stay off. Create the client secret under "Certificates & secrets" ("+ New client secret"); the "Application (client) ID" is on the "Overview" page.
 
 * **DRAWIO_MSGRAPH_CLIENT_ID**: Azure app client ID. Unset = OneDrive integration disabled.
 * **DRAWIO_MSGRAPH_CLIENT_SECRET**: Azure app client secret.
-* **DRAWIO_MSGRAPH_TENANT_ID**: Tenant ID for single-tenant Azure apps.
+* **DRAWIO_MSGRAPH_TENANT_ID**: Tenant ID for single-tenant Azure apps, used for both the sign-in page and the server's token requests. Unset = `common` (multi-tenant).
+
+Older setups also registered `[your-draw.io-hostname]/onedrive3.html` as a redirect URI and enabled the implicit grant. Only the legacy OneDrive file picker uses those, and only when it is switched on with the `inlinePicker=0` URL parameter or `"oneDriveInlinePicker": false` in `DRAWIO_CONFIG`. The default picker does not need them.
 
 ### GitLab integration
 

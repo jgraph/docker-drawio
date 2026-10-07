@@ -139,7 +139,8 @@ except ValueError as e:
 fi
 printf 'window.DRAWIO_CONFIG = %s;\n' "${DRAWIO_CONFIG_VALUE}" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 #Default UI language. Init.js resolves the language as the lang URL parameter, then the choice the
-#user saved in the editor (.drawio-config in localStorage), then the browser language. Presetting
+#user saved in the editor (.drawio-config in localStorage). The browser language is only used on
+#draw.io's own domains, so on a self-hosted one the fallback is English. Presetting
 #window.mxLanguage unconditionally would override the first two, so the default only applies when
 #neither is present. There is no language key in DRAWIO_CONFIG. [jgraph/docker-drawio#155]
 if [[ -n "${DRAWIO_LANG}" ]]; then
@@ -196,7 +197,10 @@ else
     echo -n "${DRAWIO_MSGRAPH_CLIENT_SECRET}" > $CATALINA_HOME/webapps/draw/WEB-INF/msgraph_client_secret
 
     if [[ "${DRAWIO_MSGRAPH_TENANT_ID}" ]]; then
+        #PreConfig.js sets the tenant for the sign-in page; MSGraphAuth reads WEB-INF/msgraph_tenant_id
+        #for the token endpoint and uses 'common' without it, which a single-tenant app rejects.
         echo "window.DRAWIO_MSGRAPH_TENANT_ID = '${DRAWIO_MSGRAPH_TENANT_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+        echo -n "${DRAWIO_MSGRAPH_TENANT_ID}" > $CATALINA_HOME/webapps/draw/WEB-INF/msgraph_tenant_id
     fi
 fi
 
