@@ -188,6 +188,9 @@ Older setups also registered `[your-draw.io-hostname]/onedrive3.html` as a redir
 
 ### GitLab integration
 
+> [!NOTE]
+> Gitlab will be deprecated as a storage option, it will no longer work after 31st December 2027 ([Announcement](https://github.com/jgraph/drawio/discussions/5773)).
+
 Create a new OAuth app in GitLab (Settings -> Applications). Set the "Redirect URI" to `[your-draw.io-hostname]/gitlab`, e.g. `https://drawio.example.com/gitlab`, and the "Scopes" to `api`, `read_repository` and `write_repository`.
 
 * **DRAWIO_GITLAB_ID**: OAuth application ID. Unset = GitLab integration disabled.
