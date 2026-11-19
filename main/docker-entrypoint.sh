@@ -25,6 +25,18 @@ if ! touch $CATALINA_HOME/webapps/draw/js/PreConfig.js 2>/dev/null; then
     exec "$@"
 fi
 
+#Prints a value escaped for a single-quoted string in PreConfig.js. A ' or \ (or a line break) in
+#the value would otherwise end the string early: the browser then runs none of PreConfig.js and
+#every DRAWIO_* setting is lost, with no error at startup.
+js_string() {
+    local bs='\' q="'" nl=$'\n' cr=$'\r' value="$1"
+    value=${value//"$bs"/"$bs$bs"}
+    value=${value//"$q"/"$bs$q"}
+    value=${value//"$nl"/"${bs}n"}
+    value=${value//"$cr"/"${bs}r"}
+    printf '%s' "$value"
+}
+
 echo "Init PreConfig.js"
 #Add CSP to prevent calls to draw.io
 echo "(function() {" > $CATALINA_HOME/webapps/draw/js/PreConfig.js
@@ -76,13 +88,13 @@ else
   echo "Tomcat context remains at root '/'"
 fi
 #DRAWIO_VIEWER_URL is path to the viewer js, e.g. https://www.example.com/js/viewer.min.js
-echo "window.DRAWIO_VIEWER_URL = '${DRAWIO_VIEWER_URL}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+echo "window.DRAWIO_VIEWER_URL = '$(js_string "${DRAWIO_VIEWER_URL}")';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 #DRAWIO_LIGHTBOX_URL Replace with your lightbox URL, eg. https://www.example.com
-echo "window.DRAWIO_LIGHTBOX_URL = '${DRAWIO_LIGHTBOX_URL}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+echo "window.DRAWIO_LIGHTBOX_URL = '$(js_string "${DRAWIO_LIGHTBOX_URL}")';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 #DRAWIO_APP_ICON_URL is the page the app icon opens instead of a draw.io page (no file open, files
 #on the device or in the browser), e.g. https://www.example.com/. Files in cloud storages keep theirs.
 if [[ -n "${DRAWIO_APP_ICON_URL}" ]]; then
-  echo "window.DRAWIO_APP_ICON_URL = '${DRAWIO_APP_ICON_URL}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+  echo "window.DRAWIO_APP_ICON_URL = '$(js_string "${DRAWIO_APP_ICON_URL}")';" >>$CATALINA_HOME/webapps/draw/js/PreConfig.js
 fi
 echo "window.DRAW_MATH_URL = 'math4/es5';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 #No export server ships with this image. null tells the editor that no export service exists,
