@@ -143,7 +143,7 @@ All container behaviour is controlled by environment variables, processed by [`m
   ```
 
 * **DRAWIO_LANG**: Default language of the editor UI as a draw.io language code, e.g. `es`, `de` or `pt-br` (the codes behind the editor's *Language* menu). Used when the URL has no `lang` parameter and the user has not picked a language in the editor; both of those still win. Unset = English. draw.io only follows the browser language on its own domains (app.diagrams.net and similar), never on a self-hosted one. There is no language key in `DRAWIO_CONFIG`.
-* **DRAWIO_CSP_HEADER**: Override the default Content-Security-Policy `<meta>` injected into the page. Defaults to a hard-coded policy in [`docker-entrypoint.sh`](main/docker-entrypoint.sh) — start from that policy when customising.
+* **DRAWIO_CSP_HEADER**: Override the default Content-Security-Policy `<meta>` injected into the page. Defaults to a hard-coded policy in [`docker-entrypoint.sh`](main/docker-entrypoint.sh) — start from that policy when customising. Write the policy as the browser should get it, with plain quotes such as `default-src 'self'`. Older images needed the quotes escaped as `\'self\'`, and that form still works.
 * **ENABLE_DRAWIO_PROXY**: Set to `1` to enable the `/proxy` endpoint (ProxyServlet) which allows embedding images from external URLs; default disabled.
 
 **Enabling AI diagram generation:** the AI options (`enableAi`, `gptApiKey`, `geminiApiKey`, `claudeApiKey`, `aiModels`, `aiConfigs`, ...) are editor configuration settings, not standalone environment variables — there is no `DRAWIO_ENABLE_AI`. Set them inside `DRAWIO_CONFIG`, for example:
