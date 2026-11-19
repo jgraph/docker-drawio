@@ -79,6 +79,11 @@ fi
 echo "window.DRAWIO_VIEWER_URL = '${DRAWIO_VIEWER_URL}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 #DRAWIO_LIGHTBOX_URL Replace with your lightbox URL, eg. https://www.example.com
 echo "window.DRAWIO_LIGHTBOX_URL = '${DRAWIO_LIGHTBOX_URL}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+#DRAWIO_APP_ICON_URL is the page the app icon opens instead of a draw.io page (no file open, files
+#on the device or in the browser), e.g. https://www.example.com/. Files in cloud storages keep theirs.
+if [[ -n "${DRAWIO_APP_ICON_URL}" ]]; then
+  echo "window.DRAWIO_APP_ICON_URL = '${DRAWIO_APP_ICON_URL}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+fi
 echo "window.DRAW_MATH_URL = 'math4/es5';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 #No export server ships with this image. null tells the editor that no export service exists,
 #so Export as > PDF uses the browser's print dialog and the server-rendered PNG/JPEG export is
