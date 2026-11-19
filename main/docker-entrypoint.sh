@@ -25,16 +25,43 @@ if ! touch $CATALINA_HOME/webapps/draw/js/PreConfig.js 2>/dev/null; then
     exec "$@"
 fi
 
+#Prints a value escaped for a single-quoted string in PreConfig.js. A ' or \ (or a line break) in
+#the value would otherwise end the string early: the browser then runs none of PreConfig.js and
+#every DRAWIO_* setting is lost, with no error at startup.
+js_string() {
+    local bs='\' q="'" nl=$'\n' cr=$'\r' value="$1"
+    value=${value//"$bs"/"$bs$bs"}
+    value=${value//"$q"/"$bs$q"}
+    value=${value//"$nl"/"${bs}n"}
+    value=${value//"$cr"/"${bs}r"}
+    printf '%s' "$value"
+}
+
+#Prints a Content-Security-Policy with every \' taken as ', for policies escaped by hand.
+csp_unescape() {
+    local bs='\' q="'" value="$1"
+    value=${value//"$bs$q"/"$q"}
+    printf '%s' "$value"
+}
+
 echo "Init PreConfig.js"
 #Add CSP to prevent calls to draw.io
 echo "(function() {" > $CATALINA_HOME/webapps/draw/js/PreConfig.js
 echo "  try {" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 echo "	    var s = document.createElement('meta');" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
-if [[ -z "${DRAWIO_GITLAB_ID}" ]]; then
-    echo "	    s.setAttribute('content', '${DRAWIO_CSP_HEADER:-default-src \'self\'; script-src \'self\' https://storage.googleapis.com https://apis.google.com https://docs.google.com https://code.jquery.com \'unsafe-inline\'; connect-src \'self\' https://*.dropboxapi.com https://api.trello.com https://api.github.com https://raw.githubusercontent.com https://*.googleapis.com https://*.googleusercontent.com https://graph.microsoft.com https://*.1drv.com https://*.sharepoint.com https://gitlab.com https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; img-src * data:; media-src * data:; font-src * about:; style-src \'self\' \'unsafe-inline\' https://fonts.googleapis.com; frame-src \'self\' https://*.google.com;}');" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+#A custom policy is written as the browser should get it. Older images needed its quotes escaped
+#by hand as \'self\'; a policy never contains a backslash, so csp_unescape reads that as 'self'.
+#With GitLab sign-in, the default policy also lets the editor connect to the GitLab server.
+if [[ -n "${DRAWIO_CSP_HEADER}" ]]; then
+    CSP_VALUE="$(csp_unescape "${DRAWIO_CSP_HEADER}")"
 else
-    echo "	    s.setAttribute('content', '${DRAWIO_CSP_HEADER:-default-src \'self\'; script-src \'self\' https://storage.googleapis.com https://apis.google.com https://docs.google.com https://code.jquery.com \'unsafe-inline\'; connect-src \'self\' $DRAWIO_GITLAB_URL https://*.dropboxapi.com https://api.trello.com https://api.github.com https://raw.githubusercontent.com https://*.googleapis.com https://*.googleusercontent.com https://graph.microsoft.com https://*.1drv.com https://*.sharepoint.com https://gitlab.com https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; img-src * data:; media-src * data:; font-src * about:; style-src \'self\' \'unsafe-inline\' https://fonts.googleapis.com; frame-src \'self\' https://*.google.com;}');" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+    CSP_GITLAB=""
+    if [[ -n "${DRAWIO_GITLAB_ID}" ]]; then
+        CSP_GITLAB=" ${DRAWIO_GITLAB_URL}"
+    fi
+    CSP_VALUE="default-src 'self'; script-src 'self' https://storage.googleapis.com https://apis.google.com https://docs.google.com https://code.jquery.com 'unsafe-inline'; connect-src 'self'${CSP_GITLAB} https://*.dropboxapi.com https://api.trello.com https://api.github.com https://raw.githubusercontent.com https://*.googleapis.com https://*.googleusercontent.com https://graph.microsoft.com https://*.1drv.com https://*.sharepoint.com https://gitlab.com https://*.google.com https://fonts.gstatic.com https://fonts.googleapis.com; img-src * data:; media-src * data:; font-src * about:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; frame-src 'self' https://*.google.com;"
 fi
+echo "	    s.setAttribute('content', '$(js_string "${CSP_VALUE}")');" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 echo "	    s.setAttribute('http-equiv', 'Content-Security-Policy');" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 echo " 	    var t = document.getElementsByTagName('meta')[0];" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 echo "      t.parentNode.insertBefore(s, t);" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
@@ -55,8 +82,8 @@ else
 fi
 
 # Write it to PreConfig.js
-echo "window.DRAWIO_SERVER_URL = '${DRAWIO_SERVER_URL_VALUE}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
-echo "window.DRAWIO_BASE_URL = '${DRAWIO_BASE_URL_VALUE}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+echo "window.DRAWIO_SERVER_URL = '$(js_string "${DRAWIO_SERVER_URL_VALUE}")';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+echo "window.DRAWIO_BASE_URL = '$(js_string "${DRAWIO_BASE_URL_VALUE}")';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 
 # Dynamically update Tomcat context path if the deployment URL ends in a subpath
 URL_PATH=$(echo "${DRAWIO_SERVER_URL_VALUE}" | sed -E 's|^https?://[^/]+||; s|[?#].*$||; s|/$||')
@@ -76,9 +103,14 @@ else
   echo "Tomcat context remains at root '/'"
 fi
 #DRAWIO_VIEWER_URL is path to the viewer js, e.g. https://www.example.com/js/viewer.min.js
-echo "window.DRAWIO_VIEWER_URL = '${DRAWIO_VIEWER_URL}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+echo "window.DRAWIO_VIEWER_URL = '$(js_string "${DRAWIO_VIEWER_URL}")';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 #DRAWIO_LIGHTBOX_URL Replace with your lightbox URL, eg. https://www.example.com
-echo "window.DRAWIO_LIGHTBOX_URL = '${DRAWIO_LIGHTBOX_URL}';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+echo "window.DRAWIO_LIGHTBOX_URL = '$(js_string "${DRAWIO_LIGHTBOX_URL}")';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+#DRAWIO_APP_ICON_URL is the page the app icon opens instead of a draw.io page (no file open, files
+#on the device or in the browser), e.g. https://www.example.com/. Files in cloud storages keep theirs.
+if [[ -n "${DRAWIO_APP_ICON_URL}" ]]; then
+  echo "window.DRAWIO_APP_ICON_URL = '$(js_string "${DRAWIO_APP_ICON_URL}")';" >>$CATALINA_HOME/webapps/draw/js/PreConfig.js
+fi
 echo "window.DRAW_MATH_URL = 'math4/es5';" >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 #No export server ships with this image. null tells the editor that no export service exists,
 #so Export as > PDF uses the browser's print dialog and the server-rendered PNG/JPEG export is
@@ -174,14 +206,14 @@ if [[ -z "${DRAWIO_GOOGLE_CLIENT_ID}" ]]; then
     echo "urlParams['gapi'] = '0'; //Google Drive"  >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 else
     #Google drive application id and client id for the editor
-    echo "window.DRAWIO_GOOGLE_APP_ID = '${DRAWIO_GOOGLE_APP_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
-    echo "window.DRAWIO_GOOGLE_CLIENT_ID = '${DRAWIO_GOOGLE_CLIENT_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+    echo "window.DRAWIO_GOOGLE_APP_ID = '$(js_string "${DRAWIO_GOOGLE_APP_ID}")'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+    echo "window.DRAWIO_GOOGLE_CLIENT_ID = '$(js_string "${DRAWIO_GOOGLE_CLIENT_ID}")'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
     echo -n "${DRAWIO_GOOGLE_CLIENT_ID}" > $CATALINA_HOME/webapps/draw/WEB-INF/google_client_id
     echo -n "${DRAWIO_GOOGLE_CLIENT_SECRET}" > $CATALINA_HOME/webapps/draw/WEB-INF/google_client_secret
     #If you want to use the editor as a viewer also, you can create another app with read-only access. You can use the same info as above if write-access is not an issue. 
     if [[ "${DRAWIO_GOOGLE_VIEWER_CLIENT_ID}" ]]; then
-        echo "window.DRAWIO_GOOGLE_VIEWER_APP_ID = '${DRAWIO_GOOGLE_VIEWER_APP_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
-        echo "window.DRAWIO_GOOGLE_VIEWER_CLIENT_ID = '${DRAWIO_GOOGLE_VIEWER_CLIENT_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+        echo "window.DRAWIO_GOOGLE_VIEWER_APP_ID = '$(js_string "${DRAWIO_GOOGLE_VIEWER_APP_ID}")'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+        echo "window.DRAWIO_GOOGLE_VIEWER_CLIENT_ID = '$(js_string "${DRAWIO_GOOGLE_VIEWER_CLIENT_ID}")'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
         echo -n "/:::/${DRAWIO_GOOGLE_VIEWER_CLIENT_ID}" >> $CATALINA_HOME/webapps/draw/WEB-INF/google_client_id
         echo -n "/:::/${DRAWIO_GOOGLE_VIEWER_CLIENT_SECRET}" >> $CATALINA_HOME/webapps/draw/WEB-INF/google_client_secret
     fi
@@ -192,14 +224,14 @@ if [[ -z "${DRAWIO_MSGRAPH_CLIENT_ID}" ]]; then
     echo "urlParams['od'] = '0'; //OneDrive"  >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 else
     #Google drive application id and client id for the editor
-    echo "window.DRAWIO_MSGRAPH_CLIENT_ID = '${DRAWIO_MSGRAPH_CLIENT_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+    echo "window.DRAWIO_MSGRAPH_CLIENT_ID = '$(js_string "${DRAWIO_MSGRAPH_CLIENT_ID}")'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
     echo -n "${DRAWIO_MSGRAPH_CLIENT_ID}" > $CATALINA_HOME/webapps/draw/WEB-INF/msgraph_client_id
     echo -n "${DRAWIO_MSGRAPH_CLIENT_SECRET}" > $CATALINA_HOME/webapps/draw/WEB-INF/msgraph_client_secret
 
     if [[ "${DRAWIO_MSGRAPH_TENANT_ID}" ]]; then
         #PreConfig.js sets the tenant for the sign-in page; MSGraphAuth reads WEB-INF/msgraph_tenant_id
         #for the token endpoint and uses 'common' without it, which a single-tenant app rejects.
-        echo "window.DRAWIO_MSGRAPH_TENANT_ID = '${DRAWIO_MSGRAPH_TENANT_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+        echo "window.DRAWIO_MSGRAPH_TENANT_ID = '$(js_string "${DRAWIO_MSGRAPH_TENANT_ID}")'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
         echo -n "${DRAWIO_MSGRAPH_TENANT_ID}" > $CATALINA_HOME/webapps/draw/WEB-INF/msgraph_tenant_id
     fi
 fi
@@ -209,8 +241,8 @@ if [[ -z "${DRAWIO_GITLAB_ID}" ]]; then
     echo "urlParams['gl'] = '0'; //Gitlab"  >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 else
     #Gitlab url and id for the editor
-    echo "window.DRAWIO_GITLAB_URL = '${DRAWIO_GITLAB_URL}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
-    echo "window.DRAWIO_GITLAB_ID = '${DRAWIO_GITLAB_ID}'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+    echo "window.DRAWIO_GITLAB_URL = '$(js_string "${DRAWIO_GITLAB_URL}")'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
+    echo "window.DRAWIO_GITLAB_ID = '$(js_string "${DRAWIO_GITLAB_ID}")'; " >> $CATALINA_HOME/webapps/draw/js/PreConfig.js
 
     #Gitlab server flow auth (since 14.6.7)
     echo -n "${DRAWIO_GITLAB_URL}/oauth/token" > $CATALINA_HOME/webapps/draw/WEB-INF/gitlab_auth_url
